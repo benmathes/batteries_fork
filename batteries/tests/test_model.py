@@ -20,13 +20,14 @@ from batteries.model.serializable import Serializable
 from batteries.model.storable import Storable, LocalStorage
 from batteries.model.loggable import Loggable, LogMessage
 from batteries.model.deletable import Deletable
+from batteries.model.tagable import Tagable
 
 class MyLogMessage(LogMessage):
     __tablename__ = 'my_log_message'
 
     model_key = Column(Ascii(40), ForeignKey('my_model.key'))
 
-class MyModel(Hashable, Serializable, Storable, Model, Recordable, Loggable):
+class MyModel(Hashable, Serializable, Storable, Model, Recordable, Loggable, Tagable):
     __tablename__ = 'my_model'
     serializable = ('key', 'name', 'ctime', 'mtime')
     logging_class = MyLogMessage
@@ -42,6 +43,13 @@ class MyModel(Hashable, Serializable, Storable, Model, Recordable, Loggable):
 
 class MyDeletableModel(Hashable, Deletable, Model):
     __tablename__ = 'my_deletable_model'
+    serializable = ('key', 'name')
+
+    _key = Column('key', Ascii(40), primary_key=True)
+    name = Column(Unicode(100))
+
+class MyTagableModel(Hashable, Model, Tagable):
+    __tablename__ = 'my_tagable_model'
     serializable = ('key', 'name')
 
     _key = Column('key', Ascii(40), primary_key=True)
@@ -207,3 +215,14 @@ class TestCase(TestCase):
 
         self.session.add(m)
         self.session.flush()
+
+
+    def test_tagable(self):
+        m = MyTagableModel(name=u"Boo Far")
+        assert m.tags is ()
+        new_tag = Tag(slug='foo-bar', name='foo bar')
+        m.tags.append(new_tag)
+        assert m.tags is (new_tag,)
+
+
+            
