@@ -20,13 +20,15 @@ if 'Tag' not in locals() or 'Tag' not in globals():
 
 
 class Tagable(object):
-    import pdb; pdb.set_trace()
-    tags = relationship('Tag', secondary='{}_tag'.format(),
-                        collection_class=set)
+    def _get_subclass_name(self):
+        return self.__class__.__name__
 
-    # object name, lowercase'd, underscored
-    
+    @property
+    def tags(self):
+        return Tag.query.join('{}_tag'.format(self._get_subclass_name())),
+                     collection_class=set)
 
-    # tagging table
+
+    # tagging table. How to create when child class is getting defined?
 
     # index both ways
